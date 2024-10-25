@@ -16,4 +16,6 @@ public interface HealthCareDao {
     @Query("SELECT * FROM HealthCare")
     List<HealthCare> getAllHealthCare();
 
+
+
 }

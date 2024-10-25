@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
+
+
     // 日付文字列をタイムスタンプ(long)に変換するヘルパーメソッド
     private long convertDateToTimestamp(String dateStr) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());

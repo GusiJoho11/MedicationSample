@@ -38,12 +38,20 @@
         android:hint="体温" />
 
     <EditText
-        android:id="@+id/healthcare_pressure"
+        android:id="@+id/healthcare_pressure_up"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
         android:textSize="20sp"
-        android:hint="血圧" />
+        android:hint="血圧(上)" />
+
+        <EditText
+            android:id="@+id/healthcare_pressure_down"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textSize="20sp"
+            android:hint="血圧(下)" />
 
     <EditText
         android:id="@+id/healthcare_weight"
