@@ -7,7 +7,8 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {Medication.class,HealthCare.class}, version = 4, exportSchema = false)
+//データベースをアプリ全体で使えるようにする処理
+@Database(entities = {Medication.class,HealthCare.class}, version = 5, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract MedicationDao medicationDao();
@@ -15,7 +16,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     // シングルトンパターンでデータベースインスタンスを取得
     private static volatile AppDatabase INSTANCE;
-
+//getDatebaseでデータを取得し、データベースが作られていない場合はデータベースを作成、ある場合はそのデータベースを返す処理
 public static AppDatabase getDatabase(final Context context){
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {

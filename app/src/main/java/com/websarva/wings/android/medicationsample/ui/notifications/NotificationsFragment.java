@@ -2,6 +2,8 @@ package com.websarva.wings.android.medicationsample.ui.notifications;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,22 +38,22 @@ public class NotificationsFragment extends Fragment {
     private AppDatabase db;
     private MedicationDao medicationDao;
     private FragmentNotificationsBinding binding;
-
+    //入力欄の宣言
     private EditText medicationNameInput;
     private EditText medicationDosageInput;
     private EditText medicationFrequencyInput;
     private EditText medicationStartDateInput;
     private EditText medicationEndDateInput;
+    private EditText medicationMemoInput;
     private Switch medicationReminderInput;
     private TextView medicationList;
-    //足りない項目（メモEditText、錠・包、）
+    //足りない項目（錠・包）
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         db = AppDatabase.getDatabase(requireContext());
         medicationDao = db.medicationDao();
-
     }
 
     @Override
@@ -63,11 +65,6 @@ public class NotificationsFragment extends Fragment {
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-//        final TextView textView = binding.textNotifications;
-//        notificationsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-
-        // データの取得
-//        List<Medication> medicationList = medicationDao.getAllMedications();
         // ここでデータを表示する処理を行う
         displayMedications();
 
@@ -85,8 +82,13 @@ public class NotificationsFragment extends Fragment {
         medicationStartDateInput = view.findViewById(R.id.medication_startdate);
         medicationEndDateInput = view.findViewById(R.id.medication_enddate);
         medicationReminderInput = view.findViewById(R.id.medication_reminder);
+        medicationMemoInput = view.findViewById(R.id.medication_memo);
         Button saveButton = view.findViewById(R.id.medication_save_button);
         medicationList = view.findViewById(R.id.medication_list);
+
+        //各項目の入力制限
+        medicationDosageInput.setFilters(new InputFilter[]{ new medicationDosageFilter() });
+        medicationFrequencyInput.setFilters(new InputFilter[]{ new medicationFrequencyFilter() });
 
         // 薬データベースとDAOの取得
         AppDatabase db = AppDatabase.getDatabase(getActivity());
@@ -121,15 +123,15 @@ public class NotificationsFragment extends Fragment {
 
     private void saveMedication() {
         try {
-            // 名前、服用量、服用回数、服用開始日と終了日の入力値を取得
+            // 名前、服用量,メモの入力値を取得
             String name = medicationNameInput.getText().toString();
             int dosage = Integer.parseInt(medicationDosageInput.getText().toString());
             int frequency = Integer.parseInt(medicationFrequencyInput.getText().toString());
+            String memo = medicationMemoInput.getText().toString();
 
             // 開始日と終了日の文字列を取得
             String startDateStr = medicationStartDateInput.getText().toString();
             String endDateStr = medicationEndDateInput.getText().toString();
-
             // 日付をタイムスタンプ(long)に変換する
             long startDateLong = convertDateToTimestamp(startDateStr);
             long endDateLong = convertDateToTimestamp(endDateStr);
@@ -144,6 +146,7 @@ public class NotificationsFragment extends Fragment {
             medication.frequency = frequency;
             medication.startdate = startDateLong;
             medication.enddate = endDateLong;
+            medication.memo = memo;
             medication.reminder = reminder;  // リマインダー設定
 
         // データベースに薬情報を挿入（バックグラウンドスレッドで処理）
@@ -156,7 +159,7 @@ public class NotificationsFragment extends Fragment {
         }).start();
         } catch (NumberFormatException e) {
             if (getActivity() != null) {
-                Toast.makeText(requireContext(), "無効な入力があります。全てのフィールドに正しい値を入力してください。", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "全ての項目に値を入力してください。", Toast.LENGTH_LONG).show();
             }
         } catch (ParseException e) {
             if (getActivity() != null) {
@@ -194,6 +197,7 @@ public class NotificationsFragment extends Fragment {
                         .append(", 服用回数: ").append(medication.frequency).append("\n")
                         .append(", 服用開始: ").append(medication.startdate).append("\n")
                         .append(", 服用終了: ").append(medication.enddate).append("\n")
+                        .append(", メモ: ").append(medication.memo).append("\n")
                         .append(", リマインダー: ").append(medication.reminder).append("\n");
 
 
@@ -203,5 +207,33 @@ public class NotificationsFragment extends Fragment {
             }
 
         }).start();
+    }
+
+    //  InputFilterを使って服用量の入力制限
+    public class medicationDosageFilter implements InputFilter {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            String newInput = dest.subSequence(0, dstart) + source.toString() + dest.subSequence(dend, dest.length());
+
+            // 整数部1桁 (例: "2"など)
+            if (newInput.matches("^\\d{0,1}")) {
+                return null;  // 入力が有効な場合は変更なし
+            }
+            return "";  // 無効な入力を制限
+        }
+    }
+
+    //  InputFilterを使って服用回数の入力制限
+    public class medicationFrequencyFilter implements InputFilter {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            String newInput = dest.subSequence(0, dstart) + source.toString() + dest.subSequence(dend, dest.length());
+
+            // 整数部1桁 (例: "2"など)
+            if (newInput.matches("^\\d{0,1}")) {
+                return null;  // 入力が有効な場合は変更なし
+            }
+            return "";  // 無効な入力を制限
+        }
     }
 }

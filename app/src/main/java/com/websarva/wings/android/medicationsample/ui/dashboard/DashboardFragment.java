@@ -1,6 +1,8 @@
 package com.websarva.wings.android.medicationsample.ui.dashboard;
 
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.slider.Slider;
 import com.websarva.wings.android.medicationsample.AppDatabase;
 import com.websarva.wings.android.medicationsample.HealthCare;
 import com.websarva.wings.android.medicationsample.HealthCareDao;
@@ -38,6 +41,7 @@ public class DashboardFragment extends Fragment {
     private EditText healthcareWeightInput;
     private EditText healthcareSugerInput;
     private TextView healthcareList;
+
 
 
     @Override
@@ -75,6 +79,13 @@ public class DashboardFragment extends Fragment {
             Button hc_saveButton = view.findViewById(R.id.healthcare_save_button);
             healthcareList = view.findViewById(R.id.healthcare_list);
 
+            //各項目の入力制限
+            healthcareTemperatureInput.setFilters(new InputFilter[]{ new TemperatureFilter() });
+            healthcarePressureUpInput.setFilters(new InputFilter[]{ new PressureUpFilter() });
+            healthcarePressureDownInput.setFilters(new InputFilter[]{ new PressureDownFilter() });
+            healthcareWeightInput.setFilters(new InputFilter[] { new WeightInputFilter() });
+            healthcareSugerInput.setFilters(new InputFilter[] { new SugerInputFilter() });
+
             // 体調データベースとDAOの取得
             AppDatabase db = AppDatabase.getDatabase(getActivity());
             healthCareDao = db.healthCareDao();
@@ -86,6 +97,7 @@ public class DashboardFragment extends Fragment {
             displayHealthCares();
 
         }
+
 
     @Override
         public void onDestroyView() {
@@ -138,7 +150,7 @@ public class DashboardFragment extends Fragment {
                 // 日付のフォーマットを適用
                 String formattedDate = healthcare.entrydate != null ? dateFormat.format(healthcare.entrydate) : "日時不明";
 
-                displayText.append("体調: ").append(healthcare.temperature)
+                displayText.append("体温: ").append(healthcare.temperature)
                         .append(", 血圧(上): ").append(healthcare.pressureUp).append("\n")
                         .append(", 血圧(下): ").append(healthcare.pressureDown).append("\n")
                         .append(", 体重: ").append(healthcare.weight).append("\n")
@@ -151,4 +163,75 @@ public class DashboardFragment extends Fragment {
             }
         }).start();
     }
+
+    //  InputFilterを使って体温の入力制限
+    public class TemperatureFilter implements InputFilter {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            String newInput = dest.subSequence(0, dstart) + source.toString() + dest.subSequence(dend, dest.length());
+
+            // 整数部2桁・小数部1桁のパターン (例: "99.9"など)
+            if (newInput.matches("^\\d{0,2}(\\.\\d?)?$")) {
+                return null;  // 入力が有効な場合は変更なし
+            }
+            return "";  // 無効な入力を制限
+        }
+    }
+
+    //  InputFilterを使って血圧（上）の入力制限
+    public class PressureUpFilter implements InputFilter {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            String newInput = dest.subSequence(0, dstart) + source.toString() + dest.subSequence(dend, dest.length());
+
+            // 整数部3桁のパターン (例: "123")
+            if (newInput.matches("^\\d{0,3}(\\\\d?)?$")) {
+                return null;  // 入力が有効な場合は変更なし
+            }
+            return "";  // 無効な入力を制限
+        }
+    }
+
+    //  InputFilterを使って血圧（下）の入力制限
+    public class PressureDownFilter implements InputFilter {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            String newInput = dest.subSequence(0, dstart) + source.toString() + dest.subSequence(dend, dest.length());
+
+            // 整数部2桁のパターン (例: "36")
+            if (newInput.matches("^\\d{0,2}(\\\\d?)?$")) {
+                return null;  // 入力が有効な場合は変更なし
+            }
+            return "";  // 無効な入力を制限
+        }
+    }
+
+    //  InputFilterを使って体重の入力制限
+    public class WeightInputFilter implements InputFilter {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            String newInput = dest.subSequence(0, dstart) + source.toString() + dest.subSequence(dend, dest.length());
+
+            // 整数部3桁・小数部1桁のパターン (例: "123.4"、"99.9"など)
+            if (newInput.matches("^\\d{0,3}(\\.\\d?)?$")) {
+                return null;  // 入力が有効な場合は変更なし
+            }
+            return "";  // 無効な入力を制限
+        }
+    }
+
+    //  InputFilterを使って血糖値の入力制限
+    public class SugerInputFilter implements InputFilter {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            String newInput = dest.subSequence(0, dstart) + source.toString() + dest.subSequence(dend, dest.length());
+
+            // 整数部3桁のパターン (例: "123")
+            if (newInput.matches("^\\d{0,3}(\\\\d?)?$")) {
+                return null;  // 入力が有効な場合は変更なし
+            }
+            return "";  // 無効な入力を制限
+        }
+    }
 }
+

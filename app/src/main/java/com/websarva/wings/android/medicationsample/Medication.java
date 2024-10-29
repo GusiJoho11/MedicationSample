@@ -12,5 +12,6 @@ public class Medication {
     public int frequency;      // 服用頻度
     public long startdate;     // 服用開始日（Unixタイムスタンプ）
     public long enddate;       // 服用終了日（Unixタイムスタンプ）
+    public String memo;
     public boolean reminder;   // リマインダー情報
 }
